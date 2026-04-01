@@ -8,7 +8,27 @@ public partial class MainPage : ContentPage
     public MainPage(IVpnHandler vpnHandler)
     {
         InitializeComponent();
-        _vpnHandler = vpnHandler; // Nur Zuweisung, KEINE Methodenausführung!
+        _vpnHandler = vpnHandler;
+        _vpnHandler.BlockedCountChanged += OnBlockedCountChanged;
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _vpnHandler.BlockedCountChanged -= OnBlockedCountChanged;
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _vpnHandler.BlockedCountChanged -= OnBlockedCountChanged;
+        _vpnHandler.BlockedCountChanged += OnBlockedCountChanged;
+    }
+
+    private void OnBlockedCountChanged(object? sender, int count)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+            BlockedAdsLabel.Text = $"Blockierte Werbung: {count}");
     }
 
     private void OnToggleVpnClicked(object sender, EventArgs e)
@@ -19,19 +39,18 @@ public partial class MainPage : ContentPage
         {
             StatusLabel.Text = "Schutz ist aktiv";
             StatusLabel.TextColor = Colors.LightGreen;
-            ToggleVpnButton.Text = "Schutz beenden";
-            ToggleVpnButton.BackgroundColor = Colors.DarkRed;
-            
-            _vpnHandler.StartVpn(); // Motor starten
+            ToggleVpnButton.TextColor = Colors.LightGreen;
+            ToggleVpnButton.BorderColor = Colors.LightGreen;
+            _vpnHandler.StartVpn();
         }
         else
         {
             StatusLabel.Text = "Schutz ist inaktiv";
             StatusLabel.TextColor = Color.FromArgb("#aaaaaa");
-            ToggleVpnButton.Text = "Schutz starten";
-            ToggleVpnButton.BackgroundColor = Color.FromArgb("#28a745");
-            
-            _vpnHandler.StopVpn(); // Motor stoppen
+            ToggleVpnButton.TextColor = Color.FromArgb("#555555");
+            ToggleVpnButton.BorderColor = Color.FromArgb("#333333");
+            BlockedAdsLabel.Text = "Blockierte Werbung: 0";
+            _vpnHandler.StopVpn();
         }
     }
 }

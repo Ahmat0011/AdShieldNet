@@ -5,24 +5,26 @@
              BackgroundColor="#121212">
 
     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="30">
-        
+
         <Label Text="AdShield Pro" FontSize="36" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" />
-        
+
         <Label x:Name="StatusLabel" Text="Schutz ist inaktiv" TextColor="#aaaaaa" FontSize="18" HorizontalOptions="Center" />
-        
-        <Button x:Name="ToggleVpnButton" 
-                Text="Schutz starten" 
-                BackgroundColor="#28a745" 
-                TextColor="White" 
-                FontSize="20" 
-                FontAttributes="Bold" 
-                CornerRadius="25" 
-                HeightRequest="60" 
-                WidthRequest="250" 
-                Clicked="OnToggleVpnClicked" 
+
+        <!-- Round toggle / power button -->
+        <Button x:Name="ToggleVpnButton"
+                Text="⏻"
+                FontSize="52"
+                BackgroundColor="#1e1e1e"
+                TextColor="#555555"
+                BorderColor="#333333"
+                BorderWidth="2"
+                CornerRadius="55"
+                HeightRequest="110"
+                WidthRequest="110"
+                Clicked="OnToggleVpnClicked"
                 HorizontalOptions="Center" />
-                
+
         <Label x:Name="BlockedAdsLabel" Text="Blockierte Werbung: 0" TextColor="#aaaaaa" FontSize="16" HorizontalOptions="Center" />
-        
+
     </VerticalStackLayout>
 </ContentPage>
