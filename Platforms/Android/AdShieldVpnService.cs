@@ -190,7 +190,8 @@ public class AdShieldVpnService : VpnService
         try
         {
             using var sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            // Protect the socket so its traffic bypasses the VPN tunnel
+            // File descriptors on Android are always small non-negative integers,
+            // so truncating to int32 is safe here. Any failure is caught below.
             Protect(sock.Handle.ToInt32());
             sock.SendTimeout = 1000;
             sock.ReceiveTimeout = 3000;
@@ -244,7 +245,7 @@ public class AdShieldVpnService : VpnService
         pkt[1] = 0;
         pkt[2] = (byte)(ipLen >> 8);
         pkt[3] = (byte)(ipLen & 0xFF);
-        pkt[4] = pkt[5] = 0;                    // ID
+        pkt[4] = pkt[5] = 0;                    // ID=0 (acceptable; Don't Fragment flag is set so no reassembly)
         pkt[6] = 0x40; pkt[7] = 0;             // Don't Fragment
         pkt[8] = 64;                             // TTL
         pkt[9] = 17;                             // Protocol: UDP

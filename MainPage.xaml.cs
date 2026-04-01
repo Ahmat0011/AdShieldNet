@@ -12,6 +12,19 @@ public partial class MainPage : ContentPage
         _vpnHandler.BlockedCountChanged += OnBlockedCountChanged;
     }
 
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _vpnHandler.BlockedCountChanged -= OnBlockedCountChanged;
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _vpnHandler.BlockedCountChanged -= OnBlockedCountChanged;
+        _vpnHandler.BlockedCountChanged += OnBlockedCountChanged;
+    }
+
     private void OnBlockedCountChanged(object? sender, int count)
     {
         MainThread.BeginInvokeOnMainThread(() =>
