@@ -28,12 +28,14 @@ public class AdShieldVpnService : VpnService
 
     public static int BlockedCount => _blockedCount;
     public static event EventHandler<int>? BlockedCountChanged;
+    public static event EventHandler? VpnStopped;
 
     public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
     {
         if (intent?.Action == ActionStart) StartVpnService();
         else if (intent?.Action == ActionStop) StopVpnService();
-        return StartCommandResult.Sticky;
+        else StopSelf(); // Restarted by Android with null intent — nothing to do
+        return StartCommandResult.NotSticky;
     }
 
     private void StartVpnService()
@@ -70,6 +72,7 @@ public class AdShieldVpnService : VpnService
         _vpnInterface?.Close();
         _vpnInterface = null;
         StopForegroundCompat();
+        VpnStopped?.Invoke(this, EventArgs.Empty);
         StopSelf();
     }
 
@@ -173,6 +176,10 @@ public class AdShieldVpnService : VpnService
                 break;
             }
         }
+
+        // Packet loop exited without explicit cancellation — stop the service cleanly
+        if (!token.IsCancellationRequested)
+            StopSelf();
     }
 
     private static bool IsDnsQuery(byte[] p, int len)

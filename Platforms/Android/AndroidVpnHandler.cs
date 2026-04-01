@@ -17,6 +17,12 @@ public class AndroidVpnHandler : IVpnHandler
         remove => AdShieldVpnService.BlockedCountChanged -= value;
     }
 
+    public event EventHandler? VpnStopped
+    {
+        add => AdShieldVpnService.VpnStopped += value;
+        remove => AdShieldVpnService.VpnStopped -= value;
+    }
+
     public void StartVpn()
     {
         var intent = VpnService.Prepare(Application.Context);
