@@ -21,6 +21,9 @@ public class AdShieldVpnService : VpnService
     private const string ChannelId = "adshield_channel";
     private const int NotifId = 1;
 
+    private const string PrimaryDnsServer = "8.8.8.8";
+    private const string FallbackDnsServer = "1.1.1.1";
+
     private ParcelFileDescriptor? _vpnInterface;
     private CancellationTokenSource? _cts;
     private readonly DnsPacketParser _parser = new();
@@ -161,7 +164,10 @@ public class AdShieldVpnService : VpnService
                     dnsResponse = ForwardDns(dnsPayload);
                 }
 
-                if (dnsResponse == null) continue;
+                // If forwarding failed, reply with SERVFAIL so the client fails fast
+                // instead of waiting for a timeout that makes legitimate sites appear broken.
+                if (dnsResponse == null)
+                    dnsResponse = MakeServFail(dnsPayload);
 
                 byte[]? responsePacket = WrapInIpUdp(buffer, len, dnsResponse);
                 if (responsePacket != null)
@@ -194,16 +200,23 @@ public class AdShieldVpnService : VpnService
 
     private byte[]? ForwardDns(byte[] query)
     {
+        // Try primary DNS first, then fall back to a secondary server
+        return ForwardDnsTo(query, PrimaryDnsServer)
+            ?? ForwardDnsTo(query, FallbackDnsServer);
+    }
+
+    private byte[]? ForwardDnsTo(byte[] query, string server)
+    {
         try
         {
             using var sock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             // File descriptors on Android are always small non-negative integers,
             // so truncating to int32 is safe here. Any failure is caught below.
             Protect(sock.Handle.ToInt32());
-            sock.SendTimeout = 1000;
-            sock.ReceiveTimeout = 3000;
+            sock.SendTimeout = 2000;
+            sock.ReceiveTimeout = 2000;
 
-            var endpoint = new IPEndPoint(IPAddress.Parse("8.8.8.8"), 53);
+            var endpoint = new IPEndPoint(IPAddress.Parse(server), 53);
             sock.SendTo(query, endpoint);
 
             var buf = new byte[4096];
@@ -226,10 +239,27 @@ public class AdShieldVpnService : VpnService
     {
         var response = new byte[query.Length];
         Array.Copy(query, response, query.Length);
-        // QR=1 (response), preserve OPCODE/RD, clear AA/TC
-        response[2] = (byte)((query[2] | 0x80) & 0xF8);
+        // QR=1 (response), preserve OPCODE and RD, clear AA and TC
+        // 0x80 sets QR=1; 0xF9 (11111001) clears bits 2 (AA) and 1 (TC) while preserving RD (bit 0)
+        response[2] = (byte)((query[2] | 0x80) & 0xF9);
         // RA=1, RCODE=3 (NXDOMAIN)
         response[3] = 0x83;
+        // Zero out answer / authority / additional counts
+        response[6] = response[7] = 0;
+        response[8] = response[9] = 0;
+        response[10] = response[11] = 0;
+        return response;
+    }
+
+    // Craft a DNS SERVFAIL response from the original query payload
+    private static byte[] MakeServFail(byte[] query)
+    {
+        var response = new byte[query.Length];
+        Array.Copy(query, response, query.Length);
+        // QR=1 (response), preserve OPCODE and RD, clear AA and TC
+        response[2] = (byte)((query[2] | 0x80) & 0xF9);
+        // RA=1, RCODE=2 (SERVFAIL)
+        response[3] = 0x82;
         // Zero out answer / authority / additional counts
         response[6] = response[7] = 0;
         response[8] = response[9] = 0;

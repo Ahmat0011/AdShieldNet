@@ -6,37 +6,112 @@ namespace AdShieldNet;
 
 public class DnsPacketParser
 {
-    // A more extensive list of mobile and general ad networks, analytics, and tracking domains
+    // Comprehensive list of ad networks, analytics, and tracking domains.
+    // Sub-domain matching is applied, so e.g. "doubleclick.net" also blocks "ad.doubleclick.net".
     private readonly string[] _blockedDomains = new string[]
     {
+        // Google advertising & analytics
         "doubleclick.net",
         "google-analytics.com",
         "googlesyndication.com",
         "googleadservices.com",
+        "googletagmanager.com",
+        "googletagservices.com",
+        "analytics.google.com",
+        "adservice.google.com",
+        "2mdn.net",              // Google's ad-delivery CDN
+
+        // Major programmatic ad networks
+        "appnexus.com",
+        "adnxs.com",             // AppNexus / Xandr
+        "rubiconproject.com",
+        "pubmatic.com",
+        "openx.net",
+        "smartadserver.com",
+        "adform.net",
+        "advertising.com",
+        "adsrvr.org",            // The Trade Desk
+        "tradedesk.com",
+        "mediamath.com",
+        "mathtag.com",
+        "indexexchange.com",
+        "lijit.com",             // Sovrn
+        "33across.com",
+        "bidswitch.net",
+        "yieldmo.com",
+        "spotxchange.com",
+        "spotx.tv",
+        "freewheel.tv",
+        "connatix.com",
+        "media.net",
+        "moatads.com",
+        "moatpixel.com",
+
+        // Analytics & data-collection platforms
+        "quantserve.com",
+        "scorecardresearch.com",
+        "omtrdc.net",            // Adobe Analytics
+        "demdex.net",            // Adobe Audience Manager
+        "2o7.net",               // Adobe Analytics (legacy)
+        "everesttech.net",
+        "mixpanel.com",
+        "amplitude.com",
+        "segment.io",
+        "segment.com",
+        "hotjar.com",
+        "mouseflow.com",
+        "fullstory.com",
+        "heap.io",
+        "crazyegg.com",
+        "newrelic.com",
+        "nr-data.net",           // New Relic browser agent
+
+        // Mobile ad networks & SDKs
         "applovin.com",
         "vungle.com",
-        "taboola.com",
-        "unityads.unity3d.com",
-        "appsflyer.com",
-        "amazon-adsystem.com",
         "adcolony.com",
         "chartboost.com",
-        "adjust.com",
-        "inmobi.com",
         "ironsrc.com",
-        "flurry.com",
-        "branch.io",
+        "inmobi.com",
+        "tapjoy.com",
+        "digitalturbine.com",
+        "fyber.com",
+        "mintegral.com",
+        "mobvista.com",
+        "loopme.com",
+        "startapp.com",
+        "mopub.com",
+        "unityads.unity3d.com",
+
+        // Attribution & analytics SDKs
+        "appsflyer.com",
+        "adjust.com",
         "kochava.com",
         "singular.net",
-        "graph.facebook.com",    // Facebook Tracking
+        "branch.io",
+        "flurry.com",
+
+        // Social-media tracking pixels & ad delivery
+        "graph.facebook.com",
         "connect.facebook.net",
-        "ads.tiktok.com",        // TikTok Ads
+        "an.facebook.com",
+        "ads.tiktok.com",
         "analytics.tiktok.com",
-        "byteoversea.com",       // ByteDance Analytics
-        "bingads.microsoft.com", // Bing Ads
+        "byteoversea.com",
+
+        // Amazon DSP / display ads
+        "amazon-adsystem.com",
+        "sizmek.com",
+
+        // Microsoft / Bing advertising
+        "bingads.microsoft.com",
         "bat.bing.com",
+        "clarity.ms",            // Microsoft Clarity heat-mapping
+
+        // Retargeting & content-recommendation
         "criteo.com",
-        "outbrain.com"
+        "outbrain.com",
+        "taboola.com",
     };
 
     // Return the extracted domain additionally via an out parameter
