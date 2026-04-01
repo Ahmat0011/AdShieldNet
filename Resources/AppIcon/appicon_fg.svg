@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield Outer -->
+  <path d="M512 200 C512 200 800 250 800 350 C800 650 512 850 512 850 C512 850 224 650 224 350 C224 250 512 200 512 200 Z" fill="#2E7D32" stroke="#1B5E20" stroke-width="20" stroke-linejoin="round"/>
+  <!-- Shield Inner -->
+  <path d="M512 250 C512 250 750 290 750 380 C750 620 512 790 512 790 C512 790 274 620 274 380 C274 290 512 250 512 250 Z" fill="#4CAF50" />
+  <!-- Text -->
+  <text x="512" y="620" font-family="sans-serif" font-size="300" font-weight="bold" fill="white" text-anchor="middle">A</text>
+</svg>
