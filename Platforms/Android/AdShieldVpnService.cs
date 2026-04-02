@@ -137,7 +137,7 @@ public class AdShieldVpnService : VpnService
         // type that was declared in the manifest (connectedDevice).  The typed
         // 3-argument overload is available from API 29, so we use it there and above.
         // On older OS versions the 2-argument overload is used.
-        const int ForegroundServiceTypeConnectedDevice = 0x10; // ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        const Android.Content.PM.ForegroundService ForegroundServiceTypeConnectedDevice = (Android.Content.PM.ForegroundService)0x10; // ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
             StartForeground(NotifId, notification, ForegroundServiceTypeConnectedDevice);
         else
