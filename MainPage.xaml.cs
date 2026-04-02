@@ -48,7 +48,7 @@ public partial class MainPage : ContentPage
         });
     }
 
-    private void OnToggleVpnClicked(object sender, EventArgs e)
+    private void OnToggleVpnClicked(object? sender, EventArgs e)
     {
         _isVpnActive = !_isVpnActive;
 
