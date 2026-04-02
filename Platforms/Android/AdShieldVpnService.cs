@@ -91,7 +91,7 @@ public class AdShieldVpnService : VpnService
         StopSelf();
     }
 
-#pragma warning disable CA1416
+#pragma warning disable CA1416, CA1422
     private void StopForegroundCompat()
     {
         if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
@@ -137,13 +137,13 @@ public class AdShieldVpnService : VpnService
         // type that was declared in the manifest (connectedDevice).  The typed
         // 3-argument overload is available from API 29, so we use it there and above.
         // On older OS versions the 2-argument overload is used.
-        const Android.Content.PM.ForegroundService ForegroundServiceTypeConnectedDevice = (Android.Content.PM.ForegroundService)0x10; // ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        const global::Android.Content.PM.ForegroundService ForegroundServiceTypeConnectedDevice = (global::Android.Content.PM.ForegroundService)0x10; // ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
             StartForeground(NotifId, notification, ForegroundServiceTypeConnectedDevice);
         else
             StartForeground(NotifId, notification);
     }
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 
     private void RunPacketLoop(CancellationToken token)
     {
