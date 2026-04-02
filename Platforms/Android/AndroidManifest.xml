@@ -26,5 +26,13 @@
 	    Silently ignored on older OS versions.
 	-->
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+	<!--
+	    Android 14+ (API 34) enforces that apps using FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+	    hold at least one prerequisite permission at the time startForeground() is called.
+	    CHANGE_NETWORK_STATE is the appropriate choice for a VPN app that modifies the
+	    device's network routing state.  Without it the system throws a SecurityException
+	    and kills the process immediately.
+	-->
+	<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>
