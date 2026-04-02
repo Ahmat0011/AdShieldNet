@@ -2,6 +2,7 @@ using Android.App;
 using Android.Content;
 using Android.Net;
 using Android.OS;
+using Android.Runtime;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,8 +13,11 @@ using SocketType = System.Net.Sockets.SocketType;
 
 namespace AdShieldNet.Platforms.Android;
 
-[Service(Exported = true, Permission = "android.permission.BIND_VPN_SERVICE")]
-[IntentFilter(new[] { "android.net.VpnService" })]
+// [Register] gives the Android Callable Wrapper a stable, predictable Java class
+// name so that the android:name in AndroidManifest.xml can reference it reliably.
+// Without this attribute .NET for Android generates a hash-based name that may
+// change between builds.
+[Register("com/companyname/adshieldnet/AdShieldVpnService")]
 public class AdShieldVpnService : VpnService
 {
     public const string ActionStart = "com.companyname.adshieldnet.START_VPN";
@@ -28,6 +32,7 @@ public class AdShieldVpnService : VpnService
     private CancellationTokenSource? _cts;
     private readonly DnsPacketParser _parser = new();
     private static int _blockedCount;
+    private int _stoppedFlag; // used with Interlocked to prevent double-stop
 
     public static int BlockedCount => _blockedCount;
     public static event EventHandler<int>? BlockedCountChanged;
@@ -44,6 +49,9 @@ public class AdShieldVpnService : VpnService
     private void StartVpnService()
     {
         if (_vpnInterface != null) return;
+
+        // Reset the stop-guard so a subsequent stop call is handled correctly.
+        Interlocked.Exchange(ref _stoppedFlag, 0);
 
         StartForegroundNotification();
 
@@ -70,6 +78,10 @@ public class AdShieldVpnService : VpnService
 
     private void StopVpnService()
     {
+        // Guard: ensure we only execute stop logic once even if called from both
+        // OnStartCommand(ActionStop) and OnDestroy() at the same time.
+        if (Interlocked.Exchange(ref _stoppedFlag, 1) != 0) return;
+
         _cts?.Cancel();
         _cts = null;
         _vpnInterface?.Close();
@@ -116,7 +128,20 @@ public class AdShieldVpnService : VpnService
                 .Build();
         }
 
-        StartForeground(NotifId, notification);
+        CallStartForeground(notification);
+    }
+
+    private void CallStartForeground(Notification notification)
+    {
+        // Android 14+ (API 34) requires startForeground() to pass the foreground service
+        // type that was declared in the manifest (connectedDevice).  The typed
+        // 3-argument overload is available from API 29, so we use it there and above.
+        // On older OS versions the 2-argument overload is used.
+        const int ForegroundServiceTypeConnectedDevice = 0x10; // ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+            StartForeground(NotifId, notification, ForegroundServiceTypeConnectedDevice);
+        else
+            StartForeground(NotifId, notification);
     }
 #pragma warning restore CA1416
 
