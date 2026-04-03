@@ -56,9 +56,12 @@ public class AdShieldVpnService : VpnService
         StartForegroundNotification();
 
         // Route only traffic destined for 10.0.0.2 (our fake DNS server) through the VPN.
+        // The interface address (10.0.0.1) must differ from the DNS server address (10.0.0.2)
+        // so that DNS queries to 10.0.0.2 are routed through the TUN device instead of being
+        // short-circuited by the kernel's local-address routing table.
         // All other traffic flows through the real network so websites load normally.
         var builder = new Builder(this)
-            .AddAddress("10.0.0.2", 32)
+            .AddAddress("10.0.0.1", 32)
             .AddDnsServer("10.0.0.2")
             .AddRoute("10.0.0.2", 32)
             .SetMtu(1500)
